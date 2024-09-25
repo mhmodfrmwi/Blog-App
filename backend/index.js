@@ -23,6 +23,8 @@ app.use(
 app.use(
   cors({
     origin: process.env.DOMAIN_LINK,
+    methods: ["POST", "GET", "PUT", "DELETE"],
+    credentials: true,
   })
 );
 
