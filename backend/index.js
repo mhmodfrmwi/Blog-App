@@ -22,7 +22,7 @@ app.use(
 );
 app.use(
   cors({
-    origin: "https://blog-app-snowy-tau-71.vercel.app",
+    origin: process.env.DOMAIN_LINK,
   })
 );
 
