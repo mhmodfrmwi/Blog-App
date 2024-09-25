@@ -1,0 +1,119 @@
+import { CreatePost } from "@/redux/apiCalls/postsApiCall";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import ClipLoader from "react-spinners/ClipLoader";
+import "react-toastify/dist/ReactToastify.css";
+import { GetCategories } from "@/redux/apiCalls/categoryApiCall";
+const PostForm = () => {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [photo, setPhoto] = useState(null);
+  const { categories } = useSelector((state) => state.category);
+  const { loading, isPostCreated } = useSelector((state) => state.post);
+  const dispatch = useDispatch();
+  dispatch(GetCategories());
+  const onChangeHandler = (value, fn) => {
+    fn(value);
+  };
+  const formSubmitHandler = (e) => {
+    e.preventDefault();
+
+    if (!title.trim()) {
+      return toast.error("Post title is required");
+    }
+    if (!category.trim()) {
+      return toast.error("Post category is required");
+    }
+    if (!description.trim()) {
+      return toast.error("Post description is required");
+    }
+    if (!photo) {
+      return toast.error("Post photo is required");
+    }
+    const formData = new FormData();
+    formData.append("image", photo);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("category", category);
+    dispatch(CreatePost(formData));
+  };
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (isPostCreated) {
+      navigate("/");
+    }
+  }, [isPostCreated, navigate]);
+  return (
+    <form
+      action=""
+      method="post"
+      className="flex flex-col gap-6 bg-white p-8 shadow-lg rounded-lg w-full max-w-lg"
+      onSubmit={formSubmitHandler}
+    >
+      {/* Post Title */}
+      <input
+        type="text"
+        placeholder="Post title"
+        className="border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:border-cyan-600 text-gray-700"
+        onChange={(e) => onChangeHandler(e.target.value, setTitle)}
+      />
+
+      {/* Post Category */}
+      <select
+        name=""
+        id=""
+        value={category}
+        className="border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:border-cyan-600 text-gray-700"
+        onChange={(e) => onChangeHandler(e.target.value, setCategory)}
+      >
+        <option value="">Select Category</option>
+        {categories?.map((category) => {
+          return (
+            <option value={category?.title} key={category?._id}>
+              {category?.title}
+            </option>
+          );
+        })}
+      </select>
+
+      {/* Post Description */}
+      <textarea
+        placeholder="Post description"
+        value={description}
+        className="border border-gray-300 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-cyan-600 focus:border-cyan-600 text-gray-700 h-32 resize-none"
+        onChange={(e) => onChangeHandler(e.target.value, setDescription)}
+      />
+
+      {/* Upload Photo */}
+      <div className="flex items-center">
+        <label className="bg-cyan-600 w-full text-center text-white font-semibold py-2 px-4 rounded-lg cursor-pointer hover:bg-cyan-700 transition duration-200">
+          Upload Photo
+          <input
+            type="file"
+            className="hidden"
+            onChange={(e) => setPhoto(e.target.files[0])}
+          />
+        </label>
+      </div>
+
+      {/* Submit Button */}
+      <button
+        type="submit"
+        className="bg-cyan-600 hover:bg-cyan-800 text-white font-semibold py-3 px-6 rounded-md transition duration-200 flex items-center justify-center"
+        disabled={loading} // Optionally disable the button while loading
+      >
+        {loading ? (
+          <>
+            <ClipLoader />
+          </>
+        ) : (
+          "Submit Post"
+        )}
+      </button>
+    </form>
+  );
+};
+export default PostForm;
